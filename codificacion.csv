@@ -1,0 +1,90 @@
+Archivo;Codigo
+App.java;"public class App {
+    public static void main(String[] args) {
+        ConexionTester ventana = new ConexionTester();
+        ventana.setVisible(true);
+    }
+}"
+ConexionBD.java;"import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class ConexionBD {
+    private String url;
+    private String user;
+    private String password;
+
+    public ConexionBD(String url, String user, String password) {
+        this.url = url;
+        this.user = user;
+        this.password = password;
+    }
+
+    public Connection conectar() throws ClassNotFoundException, SQLException {
+        if (url.contains(""sqlite"")) {
+            Class.forName(""org.sqlite.JDBC"");
+        } else if (url.contains(""mysql"")) {
+            Class.forName(""com.mysql.cj.jdbc.Driver"");
+        }
+        return DriverManager.getConnection(url, user, password);
+    }
+}"
+ConexionTester.java;"import javax.swing.*;
+import java.awt.*;
+import java.sql.Connection;
+
+public class ConexionTester extends JFrame {
+    private JLabel lblUrl;
+    private JLabel lblUsuario;
+    private JLabel lblPassword;
+    private JTextField txtUrl;
+    private JTextField txtUsuario;
+    private JPasswordField txtPassword;
+    private JButton btnProbar;
+    private JTextArea txtResultado;
+
+    public ConexionTester() {
+        setTitle(""Probador de Conexion"");
+        setSize(500, 300);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        JPanel panel = new JPanel(new GridLayout(4, 2));
+        lblUrl = new JLabel(""URL:"");
+        lblUsuario = new JLabel(""Usuario:"");
+        lblPassword = new JLabel(""Password:"");
+        txtUrl = new JTextField();
+        txtUsuario = new JTextField();
+        txtPassword = new JPasswordField();
+        btnProbar = new JButton(""Probar Conexion"");
+
+        panel.add(lblUrl);
+        panel.add(txtUrl);
+        panel.add(lblUsuario);
+        panel.add(txtUsuario);
+        panel.add(lblPassword);
+        panel.add(txtPassword);
+        panel.add(new JLabel(""""));
+        panel.add(btnProbar);
+
+        txtResultado = new JTextArea();
+        txtResultado.setEditable(false);
+
+        add(panel, BorderLayout.NORTH);
+        add(new JScrollPane(txtResultado), BorderLayout.CENTER);
+
+        btnProbar.addActionListener(e -> {
+            String url = txtUrl.getText();
+            String user = txtUsuario.getText();
+            String password = new String(txtPassword.getPassword());
+            ConexionBD conexion = new ConexionBD(url, user, password);
+            try (Connection conn = conexion.conectar()) {
+                txtResultado.setForeground(Color.GREEN);
+                txtResultado.setText(""Conexion exitosa"");
+            } catch (Exception ex) {
+                txtResultado.setForeground(Color.RED);
+                txtResultado.setText(""Error: "" + ex.getMessage());
+            }
+        });
+    }
+}"
